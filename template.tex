@@ -1,0 +1,263 @@
+\documentclass[black,normal,authoryear]{elegantnote}
+
+% load packages
+\usepackage{bm}                       % 加粗数学符号
+\usepackage{statmath}
+
+% define symbols
+%% bold symbol
+\newcommand{\bmw}{\bm{W}}
+\newcommand{\bmi}{\bm{I}}
+\newcommand{\bmx}{\bm{X}}
+\newcommand{\bmz}{\bm{Z}}
+\newcommand{\bmq}{\bm{Q}}
+\newcommand{\bmp}{\bm{P}}
+%% Euclidean Space
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rx}[1]{\mathbb{R}^{#1}}
+\newcommand{\Rn}{\Rx{n}}
+%% Chinese math equation reference
+\newcommand{\cqref}[1]{式\eqref{#1}}
+
+% define new theorem environment
+\newtheorem{assumption}{假设}[section]
+
+\title{空间误差模型的两阶段最小二乘估计量不具备一致性}
+\author{冯冬发}
+\institute{中国社会科学院大学（研究生院）}
+\date{\zhtoday}
+
+\begin{document}
+    \maketitle
+
+    \section{空间误差模型的基本设定与最小二乘估计量的失效}
+    空间误差模型是一类经典的空间计量经济学模型，
+    其假设模型的随机扰动项中存在空间关联性，
+    具体的设定形式如下所示：
+    \begin{align}
+        \bm{y}&=\bm{X\beta}+\bm{\epsilon} \label{eq:origin}\\
+        \bm{\epsilon}&=\rho\bm{W\epsilon}+\bm{u} \label{eq:ar_disturbance}
+    \end{align}
+    如上设定当中各符号的经济学含义无需赘述。由\cqref{eq:ar_disturbance}可知：
+    \begin{equation}
+        \label{eq:move_item}
+        (\bmi-\rho\bmw)\bm{\epsilon}=\bm{u}
+    \end{equation}
+    在\cqref{eq:origin}的左右两侧同时乘上$(\bmi-\rho\bmw)$做一个广义差分，
+    结合\cqref{eq:move_item}可得：
+    \begin{equation}
+       \begin{split}
+            (\bmi-\rho\bmw)\bm{y}&=(\bmi-\rho\bmw)\bm{X\beta}+(\bmi-\rho\bmw)\bm{\epsilon}\\
+            &=(\bmi-\rho\bmw)\bm{X\beta}+\bm{u}\\
+       \end{split}
+    \end{equation}
+    移项后可得：
+    \begin{equation}
+        \bm{y}=\rho\bmw\bm{y}+\bm{X\beta}+\bmw\bm{X}(-\rho\bm{\beta})+\bm{u}\\
+    \end{equation}
+    如果定义$\bm{\gamma}\equiv-\rho\bm{\beta}$，则可将如上模型视为一个空间杜宾模型：
+    \begin{equation}
+        \label{eq:sdm}
+        \bm{y}=\rho\bmw\bm{y}+\bm{X\beta}+\bmw\bm{X}\bm{\gamma}+\bm{u}\\
+    \end{equation}
+    该模型同时包含了被解释变量和解释变量的空间滞后项，
+    随机扰动项是一个纯粹的白噪声，
+    但模型中被解释变量的空间滞后项$\bm{Wy}$依然存在内生性问题，
+    使得最小二乘估计量不具备一致性。
+    为指明其内生性来源，
+    我们首先罗列出\cite{kelejian1997}针对该模型所作出的各项假设：
+
+    \begin{assumption}
+        随机扰动项$u_i$独立同分布，数学期望为$0$，方差有限并记为$\sigma^2$。
+    \end{assumption}
+
+    \begin{assumption}
+        \label{ass:inverse_exist}
+        空间权重矩阵$\bm{W}$的所有元素都是已知的常数，
+        对于任意的$|\rho|<1$，
+        矩阵$(\bm{I}-\rho\bm{W})$的秩均为$n$。
+    \end{assumption}
+    \begin{remark}
+        当前假设的前半部分使得空间权重矩阵$\bm{W}$完全外生，
+        后半部分则使得$(\bmi-\rho\bmw)$的逆矩阵存在。
+    \end{remark}
+
+    \begin{assumption}
+        \label{ass:abs_sum_bounded}
+        矩阵$\bmw$和$(\bmi-\rho\bmw)^{-1}(\bmi-\rho\bmw')^{-1}$的行元素绝对值之和与列元素绝对值之和一致有界。
+    \end{assumption}
+    \begin{remark}
+        假设矩阵$\bm{A}=[a_{ij}]$，
+        那么其行元素绝对值之和一致有界代表着：
+        \begin{equation*}
+            \sup_i\sum_{j=1}^n|a_{ij}|<\infty
+        \end{equation*}
+        相应的，列元素绝对值之和一致有界代表：
+        \begin{equation*}
+            \sup_j\sum_{i=1}^n|a_{ij}|<\infty
+        \end{equation*}
+        当前假设限制了空间权重矩阵和模型随机扰动项方差矩阵当中元素的取值范围，
+        实际上是限制了个体间空间关联性的大小和随机扰动项之间的相关性大小。
+    \end{remark}
+
+    \begin{assumption}
+        数据矩阵$\bm{X}$的所有元素都是非随机的，且其为列满秩矩阵。
+    \end{assumption}
+    \begin{remark}
+        该假设的前半部分保证了回归元$\bmx$的外生性，后半部分排除了完全共线性。
+    \end{remark}
+
+    \begin{assumption}
+        工具变量矩阵$\bmz$的所有元素都是非随机且绝对值有界的，
+        同时该矩阵列满秩。
+    \end{assumption}
+
+    \begin{assumption}
+        假设$\lim_{n\to\infty}(\bmx'\bmx/n)=\bmq_x$，
+        $\lim_{n\to\infty}(\bmp'\bmp/n)=\bmq_p$，
+        且$\bmq_x$和$\bmq_p$都是有限且非奇异的矩阵。
+        除此以外，$\lim_{n\to\infty}(\bmz'\bmx/n)$和$\lim_{n\to\infty}(\bmz'\bmw\bmx/n)$有限。
+    \end{assumption}
+
+    在这些假设条件的基础上，我们可以将$\bm{\epsilon}$表示为$\bm{u}$的线性变换：
+    \begin{equation}
+        \bm{\epsilon}=(\bmi-\rho\bmw)^{-1}\bm{u}
+    \end{equation}
+    其中假设\ref{ass:inverse_exist}保证了上式中$(\bmi-\rho\bmw)^{-1}$的存在性，
+    在此基础上可以给出残差项$\bm{\epsilon}$的方差矩阵为：
+    \begin{equation}
+        \begin{split}
+            var(\bm{\epsilon})&=var((\bmi-\rho\bmw)^{-1}\bm{u})\\
+            &=E((\bmi-\rho\bmw)^{-1}\bm{uu'}(\bmi-\rho\bmw')^{-1})\\
+            &=(\bmi-\rho\bmw)^{-1}E(\bm{uu'})(\bmi-\rho\bmw')^{-1}\\
+            &=(\bmi-\rho\bmw)^{-1}\sigma^2\bmi(\bmi-\rho\bmw')^{-1}\\
+            &=\sigma^2(\bmi-\rho\bmw)^{-1}(\bmi-\rho\bmw')^{-1}
+        \end{split}
+    \end{equation}
+    由于假设$\ref{ass:abs_sum_bounded}$保证了矩阵$(\bmi-\rho\bmw)^{-1}(\bmi-\rho\bmw')^{-1}$的有限性，
+    随机扰动项$\bm{\epsilon}$的方差矩阵存在。
+    现在来看\cqref{eq:sdm}当中的内生性问题，
+    可以计算$\bm{Wy}=\bm{WX\beta}+\bm{W\epsilon}$和随机扰动项$\bm{u}$的协方差为：
+    \begin{equation}
+        \begin{split}
+            cov(\bm{Wy},\bm{u})&=cov(\bm{W\epsilon},\bm{u})\\
+            &=E(\bm{W\epsilon}\bm{u}')\\
+            &=E(\bm{W\epsilon\epsilon'(\bmi-\rho\bmw)}')\\
+            &=\bm{W}E(\bm{\epsilon\epsilon'})\bm{(\bmi-\rho\bmw)}')\\
+            &=\bm{W}\sigma^2(\bmi-\rho\bmw)^{-1}(\bmi-\rho\bmw')^{-1}\bm{(\bmi-\rho\bmw)}'\\
+            &=\sigma^2\bm{W}(\bmi-\rho\bmw)^{-1}\neq0\\
+        \end{split}
+    \end{equation}
+    显然，经典线性回归的基本假设被违背了，其一致性无法被满足。
+
+    \section{两阶段最小二乘估计量及其渐近性质}
+    由于$\bm{Wy}$存在内生性问题导致最小二乘估计量不具有一致性
+    那么我们是否可以通过工具变量估计，将$\bm{Wy}$的内生性清洗掉以后再回归呢？
+    这种估计方法就是两阶段最小二乘估计，
+    笔记的标题已经暗示了这种估计方法同样不具备一致性，
+    余下全文便是用来证明该命题的。
+    
+    \cite{kelejian1997}使用了两种方式来讨论两阶段最小二乘估计量的失效。
+    其中一种是在非线性最小二乘估计的框架下重新审视了\cqref{eq:sdm}所代表的模型，
+    将其改写为如下形式：
+    \begin{equation}
+        \begin{split}
+            \bm{y}&=f(\bm{\theta})+\bm{u}\\
+            f(\bm{\theta})&=\rho\bm{Wy}+(\bmx-\rho\bmw\bmx)\bm{\beta}\\
+        \end{split}
+    \end{equation}
+    在此基础之上，可以给出非线性两阶段最优估计量对应的最优化目标为：
+    \begin{equation}
+        \label{eq:object}
+        R_n(\bar{\bm{\theta}})=\left[\bm{y}-f(\bar{\bm{\theta}})\right]'\bmz(\bmz'\bmz)^{-1}\bmz'\left[\bm{y}-f(\bar{\bm{\theta}})\right]/n
+    \end{equation}
+    \cite{amemiya1985}的经典教科书中列出了证明非线性两阶段最小二乘估计量一致性所需的前提条件，
+    其中较为关键的一条是
+    \begin{equation}
+        \label{eq:H}
+        \bm{H}=\left.\plim_{n\to\infty}n^{-1}\bfZ'\frac{\partial f(\bar{\bftheta})}{\partial\bar{\bftheta}}\right|_{\bar{\bftheta}=\bftheta}
+    \end{equation}
+    为列满秩矩阵。
+
+    由于我们已经得知了$f(\bftheta)$的具体表达式，从而可以给出：
+    \begin{equation}
+        \label{eq:partial_theta}
+        \begin{split}
+            \left.n^{-1}\bfZ'\frac{\partial f(\bar{\bftheta})}{\partial\bar{\bftheta}}\right|_{\bar{\bftheta}=\bftheta}
+            &=n^{-1}\bfZ'\left(\bfW\bfy-\bfW\bfX\bfbeta,\bfX-\rho\bfW\bfX\right)\\
+            &=n^{-1}\bfZ'\left(\bfW\bfepsilon,\bfX-\rho\bfW\bfX\right)
+        \end{split}
+    \end{equation}
+
+    由模型的基本设定可知，
+    \cqref{eq:partial_theta}所代表矩阵的第一列$n^{-1}\bfZ'\bfW\bfepsilon$的数学期望为$\bfzero$，
+    进而可以计算其方差矩阵为：
+    \begin{equation}
+        \label{eq:variance_epsilon}
+        \begin{split}
+            \V(n^{-1}\bfZ'\bfW\bfepsilon)
+            &=\E(n^{-2}\bfZ'\bfW\bfepsilon\bfepsilon'\bfW'\bfZ)\\
+            &=n^{-2}\bfZ'\bfW\E(\bfepsilon\bfepsilon')\bfW'\bfZ\\
+            &=n^{-2}\bfZ'\bfW\sigma^2(\bfI-\rho\bfW)^{-1}(\bfI-\rho\bfW')^{-1}\bfW'\bfZ\\
+            &=n^{-2}\sigma^2\bfZ'\bfW(\bfI-\rho\bfW)^{-1}(\bfI-\rho\bfW')^{-1}\bfW'\bfZ\\
+        \end{split}
+    \end{equation}
+    
+    由假设\ref{ass:abs_sum_bounded}可推知$\bfW(\bfI-\rho\bfW)^{-1}(\bfI-\rho\bfW')^{-1}\bfW'$是一个行元素绝对值之和与列元素绝对值之和一致有界的矩阵。
+    可以证明当矩阵$\bfGamma$非随机的且行元素绝对值之和与列元素绝对值之和一致收敛时，
+    矩阵$\bfA\equiv n^{-1}\bfZ'\bfGamma\bfZ$的所有元素的绝对值有界：
+    \begin{equation}
+        \begin{split}
+            |a_{ij}|
+            &=\left|n^{-1}\sum_t\sum_sz_{si}\gamma_{st}z_{tj}\right|\\
+            &\le n^{-1}\sum_t\sum_s|z_{si}||\gamma_{st}||z_{tj}|\\
+            &\le n^{-1}c^2_z\sum_t\sum_s|\gamma_{st}|\le c^2_zc_\gamma<\infty\\
+        \end{split}
+    \end{equation}
+    由此可见，\cqref{eq:variance_epsilon}的极限值为$\bfzero$。
+    由于均方收敛蕴含着依概率收敛，则$n^{-1}\bfZ'\bfW\bfepsilon\inprob\bfzero$。
+    所以\cqref{eq:H}当中的矩阵$\bfH$的第一列的元素全为$0$，
+    矩阵显然无法满足列满秩条件，
+    无法使用\cite{amemiya1985}的证明方式来说明参数估计值的一致性。
+
+    除此以外，\cite{kelejian1997}还指出\cqref{eq:object}当中的最优化目标的极限值不具备唯一的最值点，
+    导致其参数不可识别。其将参数$\bar{\bfbeta}$的取值固定在$\bfbeta$处，
+    然后允许参数$\bar{\rho}$可以取任何值，此时会有：
+    \begin{equation}
+        \begin{split}
+            \bfy-f(\bar{\rho},\bfbeta)
+            &=\bfy-\bar{\rho}\bfW\bfy-(\bfX-\bar{\rho}\bfW\bfX)\bfbeta\\
+            &=(\bfI-\bar{\rho}\bfW)\bfepsilon\\
+            &=(\bfI-\bar{\rho}\bfW)(\bfI-\rho\bfW)^{-1}\bfu\\
+        \end{split}
+    \end{equation}
+    可以求得如下式子的方差矩阵为：
+    \begin{equation}
+        \begin{split}
+            \V\left[n^{-1}\bfZ'\left(\bfy-f(\bar{\rho},\bfbeta)\right)\right]
+            &=n^{-2}\V\left[\bfZ'(\bfI-\bar{\rho}\bfW)(\bfI-\rho\bfW)^{-1}\bfu\right]\\
+            &=n^{-2}\E\left[\bfZ'(\bfI-\bar{\rho}\bfW)(\bfI-\rho\bfW)^{-1}\bfu\bfu'(\bfI-\rho\bfW')^{-1}(\bfI-\bar{\rho}\bfW')\bfZ\right]\\
+            &=n^{-2}\sigma^2\bfZ'(\bfI-\bar{\rho}\bfW)(\bfI-\rho\bfW)^{-1}(\bfI-\rho\bfW')^{-1}(\bfI-\bar{\rho}\bfW')\bfZ\\
+        \end{split}
+    \end{equation}
+    使用类似的逻辑，可以证明$n^{-1}\bfZ'(\bfy-f(\bar{\rho},\bfbeta))\inprob\bfzero$，
+    也就是说$n^{-1}\bfZ'(\bfy-f(\bar{\rho},\bfbeta))=o_p(1)$。
+    同时由于有$(\bfZ'\bfZ)^{-1}=O(1)$，则$R_n(\bar{\rho},\bfbeta)=o_p(1)$，
+    也就是说当$\hat{\bfbeta}$的取值为参数真值$\bfbeta$时，
+    目标函数的极限值为$\bfzero$，也就是说它没有办法识别出不同$\bar{\rho}$值之间的差异，
+    那就更不太可能在此基础之上证明参数估计量的一致性了。
+
+    \section{小结}
+    \cite{kelejian1997}的逻辑其实是有点问题的，
+    他们指出在常见的两个一致性证明框架下，
+    两阶段最小二乘估计量无法被证明具备一致性，
+    但这并不意味着估计量就真的完全不具备一致性了，
+    完全有可能是因为作者们的水平太差了，
+    没能发现合理的证明过程而已。
+    \cite{lee2002}发现了这一漏洞，并且构造出了一种具体的情形，
+    当空间权重矩阵满足一些额外的设定时，最小二乘估计量依然具备一致性，甚至是有效性。
+    给我们的启示是：弱证据终归只是弱证据，理论上证明一个东西不能依靠想当然。
+
+    % 添加参考文献
+    \bibliography{refs}
+\end{document}
