@@ -1,70 +1,25 @@
 """generate pdf from paper content"""
 
 import re
-import os
-
-import qrcode
-import requests
+import subprocess
 
 from crawler import QiuShiCrawler
 
 class PDFGenerator:
     """generate pdf from paper content"""
     def __init__(self) -> None:
-        self.qrcode_path = 'qrcode.png'
         self.template_path = 'template.tex'
         self.template_str = '==xx({})xx=='
         self.tex_target_path = 'current.tex'
         self.strong_re = re.compile(r'<strong>(.*?)</strong>')
 
-        # make sure that there is a img folder
-        self.img_folder = 'img'
-        if not os.path.exists(self.img_folder) or not os.path.isdir(self.img_folder):
-            os.mkdir(self.img_folder)
-
         self.img_template = r"""
             \begin{figure}[htbp]
                 \centering
-                \includegraphics[width=0.5\linewidth]{==xx(path)xx==}
+                \includegraphics[width=0.7\linewidth]{==xx(path)xx==}
                 \caption*{==xx(caption)xx==}
             \end{figure}
         """
-        
-        self.session = requests.Session()
-
-    def _download_img(self, url: str) -> str:
-        """download image from internet and save it
-
-        Args:
-            url: url of image
-
-        Return:
-            path of image
-        """
-        image_bytes = self.session.get(url).content
-        image_path = os.path.join(self.img_folder, url.split('/')[-1])
-        with open(image_path, 'wb') as f:
-            f.write(image_bytes)
-
-        return image_path
-
-
-    def gen_qr(self, url: str) -> None:
-        """generate QR code from url
-        Args:
-            url: target url
-        """
-        qr = qrcode.QRCode(
-            version=1,
-            error_correction=qrcode.constants.ERROR_CORRECT_L,
-            box_size=2,
-            border=1,
-        )
-        qr.add_data(url)
-        qr.make(fit=True)
-
-        img = qr.make_image(fill_color="black", back_color="white")
-        img.save(self.qrcode_path)
 
     def gen_tex(self, content: dict) -> None:
         """generate tex source file
@@ -75,24 +30,26 @@ class PDFGenerator:
         with open(self.template_path, 'r', encoding='utf-8') as f:
             tex_code = f.read()
 
-        # fill title, author and volume 
-        for item in ['title', 'author', 'volume']:
+        # fill title, author, volume and qrcode
+        for item in ['title', 'author', 'volume', 'qrcode']:
             info = content[item]
-            info = info.replace(' ', '\ ')
             tex_code = tex_code.replace(self.template_str.format(item), info)
-
-        # fill qrcode
-        tex_code = tex_code.replace(self.template_str.format('qrcode'), self.qrcode_path)
 
         # fill paragraphs
         main_text = ''
         for item in content['content']:
-            if (img_url := item.get('img_url')):
-                img_path = self._download_img(img_url)
+            # If there is a picture, then insert it into text
+            if (img_path := item.get('img')):
                 _ = self.img_template.replace(self.template_str.format('path'), img_path)
                 main_text += _.replace(self.template_str.format('caption'), item['text'])
             else:
-                main_text += item['text'] + '\n\n'
+                current_text = item['text']
+                # generate section
+                if current_text.startswith('<strong>') and current_text.endswith('</strong>'):
+                    current_text = self.strong_re.sub(r'\\section*{\1}', current_text)
+
+                main_text += current_text + '\n\n'
+
         tex_code = tex_code.replace(self.template_str.format('content'), main_text)
 
         # change <strong></strong> to \textbf{}
@@ -102,17 +59,32 @@ class PDFGenerator:
         with open(self.tex_target_path, 'w', encoding='utf-8') as f:
             f.write(tex_code)
 
+    def gen_pdf(self) -> None:
+        """generate pdf file from tex file"""
+        subprocess.run(['xelatex', f"{self.tex_target_path}"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            encoding="utf-8",
+            check=True
+            )
+
 
 def main():
     """program entry"""
     url = 'http://www.qstheory.cn/dukan/qs/2022-06/01/c_1128695883.htm'
 
     crawler = QiuShiCrawler()
+    print('fetching paper contents...')
     paper_content = crawler.fetch_info(url)
 
     pdf_generator = PDFGenerator()
-    pdf_generator.gen_qr(url)
+    print('generating tex file...')
     pdf_generator.gen_tex(paper_content)
+
+    print('generating pdf file...')
+    pdf_generator.gen_pdf()
+
+    print('job done!')
 
 
 if __name__ == '__main__':

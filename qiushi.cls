@@ -294,7 +294,7 @@
 \captionsetup{
   labelfont={bf,color=ecolor}}
 \captionsetup[table]{skip=3pt}
-\captionsetup[figure]{skip=3pt, font={small, it, color=blue}}
+\captionsetup[figure]{skip=3pt, font={footnotesize, it, color=blue}}
 
 % list/itemize/enumerate setting
 \RequirePackage[shortlabels,inline]{enumitem}
@@ -484,6 +484,14 @@
   \tikz\draw[baseline, fill=ecolor,draw=none,circular drop shadow] circle (2pt);}
 \newcommand*{\eitemiii}{%
   \tikz\draw[baseline,fill=ecolor,draw=none] circle (2pt);}
+
+% add qrcode at page's right top
+\newcommand{\qrcode}[1]{%
+    \tikz[remember picture,overlay]
+        \path (current page.north east) ++ (-2,-2) node {\includegraphics{#1}};
+}
+
+
 
 \setlist[enumerate,1]{label=\color{ecolor}\arabic*.}
 \setlist[enumerate,2]{label=\color{ecolor}(\alph*).}
