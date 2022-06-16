@@ -1,11 +1,17 @@
-\documentclass[geye, normal, black]{elegantnote}
+\documentclass[geye, normal, black]{qiushi}
+
+\newcommand{\qrcode}[1]{%
+    \tikz[remember picture,overlay]
+        \path (current page.north east) ++ (-2,-2) node {\includegraphics{#1}};
+}
 
 \title{==xx(title)xx==}
 \author{==xx(author)xx==}
-\date{}
+\date{==xx(volume)xx==}
 
 \begin{document}
     \maketitle
+    \qrcode{==xx(qrcode)xx==}
 
     ==xx(content)xx==
 

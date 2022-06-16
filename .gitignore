@@ -137,3 +137,10 @@ dmypy.json
 *.pdf
 *.synctex.gz
 *.xdv
+*.run.xml
+*.blg
+*.bcf
+*.bbl
+*.png
+current.tex
+img/*
