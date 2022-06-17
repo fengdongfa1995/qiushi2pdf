@@ -4,7 +4,7 @@
 % Lastest Version: https://github.com/ElegantLaTeX/ElegantNote
 
 % --- Class structure: identification part
-\ProvidesClass{elegantnote}[2022/04/09 ElegantNote v2.40 class]
+\ProvidesClass{qiushi}[2022/06/17 QiuShi v0.1 class]
 \NeedsTeXFormat{LaTeX2e}
 
 
@@ -376,7 +376,7 @@
     paperwidth=25.4cm,
     paperheight=19.05cm,
     margin=1.6cm,
-    headheight=2.17cm,
+    headheight=2.3cm,
     footskip=0.6cm}}{%
   \relax}
 

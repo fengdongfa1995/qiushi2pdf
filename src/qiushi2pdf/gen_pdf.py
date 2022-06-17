@@ -1,14 +1,19 @@
 """generate pdf from paper content"""
 
+import os
 import re
 import subprocess
+import shutil
 
-from crawler import QiuShiCrawler
+import qiushi2pdf
 
 class PDFGenerator:
     """generate pdf from paper content"""
     def __init__(self) -> None:
-        self.template_path = 'template.tex'
+        resource_path = os.path.join(os.path.dirname(qiushi2pdf.__file__), 'resource')
+        self.template_path = os.path.join(resource_path, 'template.tex')
+        self.cls_path = os.path.join(resource_path, 'qiushi.cls')
+
         self.template_str = '==xx({})xx=='
         self.tex_target_path = 'current.tex'
         self.strong_re = re.compile(r'<strong>(.*?)</strong>')
@@ -20,6 +25,11 @@ class PDFGenerator:
                 \caption*{==xx(caption)xx==}
             \end{figure}
         """
+
+    def copy_cls(self) -> None:
+        """copy and paste cls file"""
+        shutil.copy(self.cls_path, 'qiushi.cls')
+
 
     def gen_tex(self, content: dict) -> None:
         """generate tex source file
@@ -73,7 +83,7 @@ def main():
     """program entry"""
     url = 'http://www.qstheory.cn/dukan/qs/2022-06/01/c_1128695883.htm'
 
-    crawler = QiuShiCrawler()
+    crawler = qiushi2pdf.QiuShiCrawler()
     print('fetching paper contents...')
     paper_content = crawler.fetch_info(url)
 
