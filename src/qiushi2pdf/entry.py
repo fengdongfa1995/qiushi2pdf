@@ -38,6 +38,8 @@ def main():
 
     print('generating pdf file...')
     pdf_generator.gen_pdf()
+    # repeat to draw QR code
+    pdf_generator.gen_pdf()
 
     print('job done!')
 

@@ -1,7 +1,7 @@
 ## qiushi2pdf
 将《求是》文章转化为pdf文件，便于打印和阅读
 
-## System Dependence
+## System dependence
 ```bash
 sudo apt install texlive-full
 ```
@@ -33,3 +33,6 @@ qiushi2pdf http://www.qstheory.cn/dukan/qs/2022-06/15/c_1128739416.htm
 ```
 
 Then check the `current.pdf` in current directory! enjoy!
+
+## How to update
+repeat `How to install`.
