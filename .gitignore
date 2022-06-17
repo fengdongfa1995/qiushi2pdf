@@ -142,6 +142,5 @@ dmypy.json
 *.bcf
 *.bbl
 *.png
-*.tex
 src/img
 src/qiushi.cls
