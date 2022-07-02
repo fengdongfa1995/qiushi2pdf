@@ -15,8 +15,11 @@ class PDFGenerator:
         self.cls_path = os.path.join(resource_path, 'qiushi.cls')
 
         self.template_str = '==xx({})xx=='
-        self.tex_target_path = 'current.tex'
+        self.temp_file_name = 'current'
+        self.tex_target_path = self.temp_file_name + '.tex'
         self.strong_re = re.compile(r'<strong>(.*?)</strong>')
+
+        self.paper_title = ''
 
         self.img_template = r"""
             \begin{figure}[htbp]
@@ -41,6 +44,7 @@ class PDFGenerator:
             tex_code = f.read()
 
         # fill title, author, volume and qrcode
+        self.paper_title = content['title']
         for item in ['title', 'author', 'volume', 'qrcode']:
             info = content[item]
             tex_code = tex_code.replace(self.template_str.format(item), info)
@@ -77,25 +81,28 @@ class PDFGenerator:
             encoding="utf-8",
             check=True
             )
+    
+    def clean_rubbish(self) -> None:
+        """delete temporary files"""
+        def delete_file(file_path: str) -> bool:
+            """delete file
+            
+            Args:
+                file_path: path of target file which you want to delete
 
-
-def main():
-    """program entry"""
-    url = 'http://www.qstheory.cn/dukan/qs/2022-06/01/c_1128695883.htm'
-
-    crawler = qiushi2pdf.QiuShiCrawler()
-    print('fetching paper contents...')
-    paper_content = crawler.fetch_info(url)
-
-    pdf_generator = PDFGenerator()
-    print('generating tex file...')
-    pdf_generator.gen_tex(paper_content)
-
-    print('generating pdf file...')
-    pdf_generator.gen_pdf()
-
-    print('job done!')
-
-
-if __name__ == '__main__':
-    main()
+            Return:
+                True if succesful, else False
+            """
+            if os.path.exists(file_path) and os.path.isfile(file_path):
+                os.remove(file_path)
+                return True
+            return False
+        
+        suffix_list = ['aux', 'bcf', 'log', 'out', 'run.xml', 'tex']
+        for suffix in suffix_list:
+            tmp_file = self.temp_file_name + '.' + suffix
+            delete_file(tmp_file)
+        
+        delete_file('qiushi.cls')
+        shutil.rmtree('img')
+        os.rename(self.temp_file_name + '.pdf', self.paper_title + '.pdf')

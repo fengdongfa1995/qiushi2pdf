@@ -40,7 +40,7 @@ class QiuShiCrawler:
         self.session = requests.Session()
 
         # regexp for extracting contents between <p> and </p>
-        self.paragraph_re = re.compile(r'<p.*?>(.*?)</p>')
+        self.paragraph_re = re.compile(r'<p.*?>(.*?)</p>', re.S)
         # regexp for extracting url of image, which is a src attribute of img tag
         self.img_src_re = re.compile(r'src="(.*?)"')
         # regexp for dropping font tag
@@ -60,8 +60,6 @@ class QiuShiCrawler:
 
         # make sure that there is a img folder in current working path
         self.img_folder = 'img'
-        if not os.path.exists(self.img_folder) or not os.path.isdir(self.img_folder):
-            os.mkdir(self.img_folder)
 
     def gen_qr(self, url: str) -> str:
         """generate QR code image from url
@@ -85,6 +83,9 @@ class QiuShiCrawler:
         # generate QR code image and save
         img = qrcode_obj.make_image(fill_color="black", back_color="white")
         img_path = os.path.join(self.img_folder, self.qrcode_path)
+
+        if not os.path.exists(self.img_folder) or not os.path.isdir(self.img_folder):
+            os.mkdir(self.img_folder)
         img.save(img_path)
 
         return img_path
@@ -98,12 +99,32 @@ class QiuShiCrawler:
         Return:
             path of image
         """
+        if not os.path.exists(self.img_folder) or not os.path.isdir(self.img_folder):
+            os.mkdir(self.img_folder)
+
         image_bytes = self.session.get(url).content
         image_path = os.path.join(self.img_folder, get_img_name(url))
+
         with open(image_path, 'wb') as f:
             f.write(image_bytes)
 
         return image_path
+
+    def fetch_urls(self, origin_url: str) -> list:
+        """fetch article urls from list page
+        
+        Args:
+            origin_url: article list page
+
+        Yields:
+            article url
+        """
+        resp = self.session.get(url=origin_url)
+        resp.encoding = 'utf-8'
+        html = etree.HTML(resp.text)
+
+        for url in html.xpath('(//div[@class="highlight"]//a/@href)[position()<last()]'):
+            yield url
 
     def fetch_info(self, url: str) -> dict:
         """fecth key information from qiushi.com
@@ -123,6 +144,13 @@ class QiuShiCrawler:
         resp.encoding = 'utf-8'
         html = etree.HTML(resp.text)
 
+        # extract author from html source code
+        paper_author = html.xpath(self.author_xpath)[0].strip()[3:]  # drop '作者：' from string
+        result['author'] = add_backslash4space(paper_author)
+        if not result['author']:
+            print('暂时无法处理无作者文章，敬请见谅！')
+            return {}
+
         # extract title from html source code
         paper_title = html.xpath(self.title_xpath)[0].strip()
         paper_title = re.sub(r'\s+', ' ', paper_title)
@@ -131,10 +159,6 @@ class QiuShiCrawler:
         # extract volume from html source code
         paper_volume = html.xpath(self.volume_xpath)[0].strip()[3:]  # drop '来源：' from string
         result['volume'] = add_backslash4space(paper_volume)
-
-        # extract author from html source code
-        paper_author = html.xpath(self.author_xpath)[0].strip()[3:]  # drop '作者：' from string
-        result['author'] = add_backslash4space(paper_author)
 
         # extract main content of the paper
         block = {}
@@ -147,6 +171,7 @@ class QiuShiCrawler:
 
             # we need keep some tags for formating text, so extract the source code of tag
             raw_code = etree.tostring(paragraph, encoding='utf-8').decode('utf-8')
+            raw_code = raw_code.replace('&#13;', '\n')
             # just keep content between <p> and </p>
             content = self.paragraph_re.search(raw_code).group(1).strip()
             # drop <font> and </font>
